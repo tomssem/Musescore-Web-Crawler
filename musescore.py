@@ -10,22 +10,35 @@ import subprocess
 def find_button_with_span(driver, text):
     all_buttons = driver.find_elements_by_xpath("//button")
     for b in all_buttons:
-    spans = b.find_elements_by_xpath("span")
-    if len(spans) > 0:
-        assert(len(spans) == 1)
-        if spans[0].text == text:
-            return b
+        spans = b.find_elements_by_xpath("span")
+        if len(spans) > 0:
+            assert(len(spans) == 1)
+            print(spans[0].text)
+            if spans[0].text == text:
+                return b
 
+def find_button_with_class(driver, class_text):
+    all_buttons = driver.find_elements_by_xpath("//button")
+    for b in all_buttons:
+        if not len(b.text):
+            if b.get_attribute("class") == class_text:
+                return b
  
 prox = Proxy()
 prox.proxy_type = ProxyType.MANUAL
 prox.http_proxy = "http://localhost:8118"
 prox.ssl_proxy = "http://localhost:8118"
- 
+
 capabilities = webdriver.DesiredCapabilities.CHROME
 prox.add_to_capabilities(capabilities)
 
-driver = webdriver.Firefox()
+fp = webdriver.FirefoxProfile()
+fp.set_preference("browser.download.folderList",2)
+fp.set_preference("browser.download.manager.showWhenStarting",False)
+fp.set_preference("browser.download.dir", os.getcwd())
+fp.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/zip")
+
+driver = webdriver.Firefox(firefox_profile=fp)
 driver.get("http://www.musescore.com")
 print("Login")
 input("")
@@ -33,7 +46,7 @@ for pages in range(10000):
     url = "https://musescore.com/sheetmusic?sort=relevance&instruments=9&parts=1&page=" + str(pages + 104)
     print(pages + 104)
     if pages % 5 == 0:
-        subprocess.call("killall -HUP tor", shell = True)
+        subprocess.call("killall -HUP tor", shell=True)
         time.sleep(1)
     for x in range(20):
         driver.get(url)
@@ -42,24 +55,19 @@ for pages in range(10000):
         results = driver.find_elements_by_class_name('SA76l')
         # time.sleep(random.random()/2)
         # pagelist = driver.find_element_by_xpath("//img[contains(@src, 'scoredata')]")
-        import ipdb; ipdb.set_trace(context=30)
         print(results)
         for i, result in enumerate(results):
             print(1)
             result.click()
             try:
-                download_buttons = find_button_with_span(driver
-                import ipdb; ipdb.set_trace(context=30)
-                print(2)
-                download_text = driver.find_element_by_xpath('//span[span="Download"]')
-                print(3)
-                download_button = download_text.find_element_by_xpath('./..')
-                print(4)
-                doqnload_button.click()
-                import ipdb; ipdb.set_trace(context=30)
+                download_button = find_button_with_span(driver, "Download")
+                download_button.click()
+                musicxml_button = find_button_with_span(driver, "MusicXML")
+                musicxml_button.click()
+                close_button = find_button_with_class(driver, "_2Ifc- _8pMIq _3qfU_ _2uj9v _1Us9e _3HJAX _8B-BO _15kzJ")
+                close_button.click()
             except Exception:
                 print("Error")
-                import ipdb; ipdb.set_trace(context=30)
         #time.sleep(random.random()/2)
         pagelist.click()
         #time.sleep(1)     
